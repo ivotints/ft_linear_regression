@@ -41,7 +41,8 @@ def gradient_descent(x, y):
         theta1_n -= learning_rate * theta1_n_gradient
         if i % 10 == 0:
             display_movement(theta0_n, theta1_n, x, y)
-
+    
+    plt.clf()
     return theta0_n, theta1_n
 
 def load_data(filename):
@@ -79,7 +80,7 @@ def normalize(mileages, prices):
 
     if (mileage_range == 0 or price_range == 0):
         print("Cannot be normalized, division by 0.")
-        exit(-1)
+        exit(1)
 
     # normalization of data. now in list we will have values from 0 to 1 (from min value to max value)
     mileages_n = []
@@ -92,14 +93,20 @@ def normalize(mileages, prices):
     
     return mileages_n, prices_n
 
+def safe_results(theta0, theta1):
+    with open("results.csv", "w", newline="") as file:
+        writer = csv.writer(file)
+        writer.writerow(["theta0", "theta1"])
+        writer.writerow([ theta0 ,  theta1 ])
+
 def main():
     plt.ion()
     mileages, prices = load_data("data.csv")
     mileages_n, prices_n = normalize(mileages, prices)
     theta0_n, theta1_n = gradient_descent(mileages_n, prices_n)
-    plt.clf()
     theta0, theta1 = denormalize(mileages, prices, theta0_n, theta1_n)
 
+    safe_results(theta0, theta1)
 
     plt.scatter(mileages, prices, color="blue", label="Data points")
     x_line = [min(mileages), max(mileages)]
