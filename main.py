@@ -109,16 +109,14 @@ def main():
                         help="Display cost history plot in a separate window")
     parser.add_argument("--coefficient-determenation", "-cd", action="store_true",
                         help="Display the coefficient of determination (R^2) for the model")
-    parser.add_argument("--plot", "-p", dest="plot", action="store_true",
+    parser.add_argument("--plot", "-p", action="store_true",
                         help="Enable display of movement during training and final regression plot (enabled by default)")
-    parser.add_argument("--no-plot", dest="plot", action="store_false",
-                        help="Disable display of movement and final plot")
     args = parser.parse_args()
     
     if args.plot:
         plt.ion()
 
-    mileages, prices = load_data("data.csv")
+    mileages, prices = load_data("data3.csv")
     mileages_n, prices_n = normalize(mileages, prices)
     
     if args.cost_history:
@@ -142,7 +140,6 @@ def main():
         plt.show()
 
     if args.cost_history:
-        plt.figure()
         plt.plot(cost_history)
         plt.xlabel("Iteration")
         plt.ylabel("Cost")
