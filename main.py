@@ -116,7 +116,7 @@ def main():
     if args.plot:
         plt.ion()
 
-    mileages, prices = load_data("data3.csv")
+    mileages, prices = load_data("data.csv")
     mileages_n, prices_n = normalize(mileages, prices)
     
     if args.cost_history:
