@@ -38,7 +38,7 @@ def main():
     
     theta0, theta1 = read_results()
     predict_price = theta0 + theta1 * mileage
-    print(f"Predicted price: {predict_price}")
+    print(f"Predicted price: {predict_price:.3f}")
 
 if __name__ == "__main__":
     main()
