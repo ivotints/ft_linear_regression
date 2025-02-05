@@ -8,7 +8,7 @@ def display_movement(theta0_n, theta1_n, mileages, prices):
     theta0, theta1 = denormalize(mileages, prices, theta0_n, theta1_n)
     x_line = [min(mileages), max(mileages)]
     y_line = [theta0 + theta1 * x for x in x_line]
-    plt.clf()  # clear current figure
+    plt.clf()
     plt.scatter(mileages, prices, color='blue', label='Data points')
     plt.plot(x_line, y_line, color='red', label='Regression line')
     plt.xlabel('Mileage')
@@ -101,6 +101,21 @@ def coefficient_of_determination(mileages, prices, theta0, theta1):
         return 1.0
     return 1 - ss_res / ss_tot
 
+# Calculates the average of the squared differences between actual values (prices) and predicted values. Squaring emphasizes larger errors and gives a smooth gradient for optimization.
+def mean_squared_error(prices, predictions):
+    m = len(prices)
+    return sum((p - pred)**2 for p, pred in zip(prices, predictions)) / m
+
+# Takes the square root of mean squared error, returning the error in the same unit as the data. It's useful for intuitive understanding of prediction error size.
+def root_mean_squared_error(prices, predictions):
+    mse = mean_squared_error(prices, predictions)
+    return mse ** 0.5
+
+# Computes the average of the absolute differences between prices and predictions. It provides a straightforward measure of average error without squaring, making it less sensitive to outliers.
+def mean_absolute_error(prices, predictions):
+    m = len(prices)
+    return sum(abs(p - pred) for p, pred in zip(prices, predictions)) / m
+
 def main():
     parser = argparse.ArgumentParser(
         description="Train a linear regression model and display cost history, coefficient of determination (R^2), and plotting."
@@ -111,6 +126,10 @@ def main():
                         help="Display the coefficient of determination (R^2) for the model")
     parser.add_argument("--plot", "-p", action="store_true",
                         help="Enable display of movement during training and final regression plot (enabled by default)")
+    parser.add_argument("--save-pictures", "-sp", action="store_true",
+                        help="Save the regression model and cost history plots as files")
+    parser.add_argument("--mean_squared_error", "-ms", action="store_true",
+                        help="Display MSE, RMSE and MAE calculated")
     args = parser.parse_args()
     
     if args.plot:
@@ -126,12 +145,23 @@ def main():
     
     theta0, theta1 = denormalize(mileages, prices, theta0_n, theta1_n)
     safe_results(theta0, theta1)
-    
+
+    if args.mean_squared_error:
+        predictions = [theta0 + theta1 * m for m in mileages]
+        mse = mean_squared_error(prices, predictions)
+        rmse = root_mean_squared_error(prices, predictions)
+        mae = mean_absolute_error(prices, predictions)
+        print(f"MSE: {mse:.3f}")
+        print(f"RMSE: {rmse:.3f}")
+        print(f"MAE: {mae:.3f}")
+
     if args.plot:
         plt.scatter(mileages, prices, color="blue", label="Data points")
         x_line = [min(mileages), max(mileages)]
         y_line = [theta0 + theta1 * x for x in x_line]
         plt.plot(x_line, y_line, color="green", label="Regression line")
+        if args.save_pictures:
+            plt.savefig("regression_model.png")
         plt.xlabel("Mileage")
         plt.ylabel("Price")
         plt.title("Linear Regression Model")
@@ -144,6 +174,8 @@ def main():
         plt.xlabel("Iteration")
         plt.ylabel("Cost")
         plt.title("Cost History")
+        if args.save_pictures:
+            plt.savefig("cost_history.png")
         plt.show()
 
     if args.coefficient_determenation:

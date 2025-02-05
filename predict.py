@@ -8,6 +8,9 @@ def read_results():
             reader = csv.reader(f)
             next(reader)
             row = next(reader)
+            if not row or len(row) < 2:
+                print("Error: 'results.csv' does not contain the required data.")
+                sys.exit(1)
             theta0 = float(row[0])
             theta1 = float(row[1])
     except FileNotFoundError:
