@@ -5,12 +5,9 @@ import matplotlib.pyplot as plt
 import argparse
 
 def display_movement(theta0_n, theta1_n, mileages, prices):
-    # Denormalize parameters using our denormalize function
     theta0, theta1 = denormalize(mileages, prices, theta0_n, theta1_n)
-    # Prepare the regression line using the extreme mileage values
     x_line = [min(mileages), max(mileages)]
     y_line = [theta0 + theta1 * x for x in x_line]
-    # Plot data and current regression line
     plt.clf()  # clear current figure
     plt.scatter(mileages, prices, color='blue', label='Data points')
     plt.plot(x_line, y_line, color='red', label='Regression line')
@@ -18,10 +15,9 @@ def display_movement(theta0_n, theta1_n, mileages, prices):
     plt.ylabel('Price')
     plt.title('Linear Regression Movement')
     plt.legend()
-    plt.pause(0.001)  # pause to update plot view
+    plt.pause(0.001)
 
-# returns us normalized thetas.
-def gradient_descent(x, y, record_cost_history=False):
+def gradient_descent(x, y, record_cost_history=False, plot_enabled=False):
     theta0_n = 0
     theta1_n = 0
     learning_rate = 0.1
@@ -35,7 +31,6 @@ def gradient_descent(x, y, record_cost_history=False):
     for i in range(num_iterations):
         estimated_y = theta0_n + theta1_n * x_numpy
         errors = estimated_y - y_numpy 
-        # Record cost if flag is enabled: cost = (1/2m) * sum(errors^2)
         if record_cost_history:
             cost = np.sum(errors ** 2) / (2 * m)
             cost_history.append(cost)
@@ -43,7 +38,7 @@ def gradient_descent(x, y, record_cost_history=False):
         theta1_n_gradient = np.sum(errors * x_numpy) / m
         theta0_n -= learning_rate * theta0_n_gradient
         theta1_n -= learning_rate * theta1_n_gradient
-        if i % 10 == 0:
+        if plot_enabled and i % 10 == 0:
             display_movement(theta0_n, theta1_n, x, y)
     
     plt.clf()
@@ -73,7 +68,6 @@ def denormalize(mileages, prices, theta0_n, theta1_n):
 
     theta0 = price_min + price_range * theta0_n - (price_range * theta1_n * mileage_min) / mileage_range
     theta1 = (price_range / mileage_range) * theta1_n
-
     return theta0, theta1
 
 def normalize(mileages, prices):
@@ -90,7 +84,6 @@ def normalize(mileages, prices):
 
     mileages_n = [(m - mileage_min) / mileage_range for m in mileages]
     prices_n = [(p - price_min) / price_range for p in prices]
-    
     return mileages_n, prices_n
 
 def safe_results(theta0, theta1):
@@ -99,35 +92,55 @@ def safe_results(theta0, theta1):
         writer.writerow(["theta0", "theta1"])
         writer.writerow([theta0, theta1])
 
+def coefficient_of_determination(mileages, prices, theta0, theta1):
+    predictions = [theta0 + theta1 * m for m in mileages]
+    mean_price = sum(prices) / len(prices)
+    ss_tot = sum((p - mean_price) ** 2 for p in prices)
+    ss_res = sum((p - pred) ** 2 for p, pred in zip(prices, predictions))
+    if ss_tot == 0:
+        return 1.0
+    return 1 - ss_res / ss_tot
+
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--cost-history", "-ch", action="store_true", help="Display cost history plot in a separate window")
+    parser = argparse.ArgumentParser(
+        description="Train a linear regression model and display cost history, coefficient of determination (R^2), and plotting."
+    )
+    parser.add_argument("--cost-history", "-ch", action="store_true",
+                        help="Display cost history plot in a separate window")
+    parser.add_argument("--coefficient-determenation", "-cd", action="store_true",
+                        help="Display the coefficient of determination (R^2) for the model")
+    parser.add_argument("--plot", "-p", dest="plot", action="store_true",
+                        help="Enable display of movement during training and final regression plot (enabled by default)")
+    parser.add_argument("--no-plot", dest="plot", action="store_false",
+                        help="Disable display of movement and final plot")
     args = parser.parse_args()
     
-    plt.ion()
+    if args.plot:
+        plt.ion()
+
     mileages, prices = load_data("data.csv")
     mileages_n, prices_n = normalize(mileages, prices)
     
-    
     if args.cost_history:
-        theta0_n, theta1_n, cost_history = gradient_descent(mileages_n, prices_n, record_cost_history=True)
+        theta0_n, theta1_n, cost_history = gradient_descent(mileages_n, prices_n, record_cost_history=True, plot_enabled=args.plot)
     else:
-        theta0_n, theta1_n = gradient_descent(mileages_n, prices_n, record_cost_history=False)
+        theta0_n, theta1_n = gradient_descent(mileages_n, prices_n, record_cost_history=False, plot_enabled=args.plot)
     
     theta0, theta1 = denormalize(mileages, prices, theta0_n, theta1_n)
     safe_results(theta0, theta1)
     
-    plt.scatter(mileages, prices, color="blue", label="Data points")
-    x_line = [min(mileages), max(mileages)]
-    y_line = [theta0 + theta1 * x for x in x_line]
-    plt.plot(x_line, y_line, color="green", label="Regression line")
-    plt.xlabel("Mileage")
-    plt.ylabel("Price")
-    plt.title("Linear Regression Model")
-    plt.legend()
-    plt.ioff()
-    plt.show()
-    
+    if args.plot:
+        plt.scatter(mileages, prices, color="blue", label="Data points")
+        x_line = [min(mileages), max(mileages)]
+        y_line = [theta0 + theta1 * x for x in x_line]
+        plt.plot(x_line, y_line, color="green", label="Regression line")
+        plt.xlabel("Mileage")
+        plt.ylabel("Price")
+        plt.title("Linear Regression Model")
+        plt.legend()
+        plt.ioff()
+        plt.show()
+
     if args.cost_history:
         plt.figure()
         plt.plot(cost_history)
@@ -135,6 +148,12 @@ def main():
         plt.ylabel("Cost")
         plt.title("Cost History")
         plt.show()
+
+    if args.coefficient_determenation:
+        r2 = coefficient_of_determination(mileages, prices, theta0, theta1)
+        print(f"Coefficient of Determination (R^2): {r2:.3f}")
+    
+    print(f"Theta0 = {theta0:.3f}, Theta1 = {theta1:.4f}")
 
 if __name__ == "__main__":
     main()
