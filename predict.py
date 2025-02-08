@@ -8,9 +8,6 @@ def read_results():
             reader = csv.reader(f)
             next(reader)
             row = next(reader)
-            if not row or len(row) < 2:
-                print("Error: 'results.csv' does not contain the required data.")
-                sys.exit(1)
             theta0 = float(row[0])
             theta1 = float(row[1])
     except FileNotFoundError:
@@ -19,7 +16,7 @@ def read_results():
     except StopIteration:
         print("Error: 'results.csv' does not contain the expected number of rows.")
         sys.exit(1)
-    except ValueError:
+    except (ValueError, IndexError):
         print("Error: Could not convert the CSV values to floats.")
         sys.exit(1)
 
@@ -38,10 +35,20 @@ def main():
             return
     else:
         mileage = args.mileage
+    if mileage < 0:
+        print("Error: Mileage cannot be negative")
+        sys.exit(1)
+    if mileage > sys.float_info.max:
+        print("Error: Mileage value too large")
+        sys.exit(1)
     
     theta0, theta1 = read_results()
     predict_price = theta0 + theta1 * mileage
     print(f"Predicted price: {predict_price:.3f}")
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        sys.exit(1)()
