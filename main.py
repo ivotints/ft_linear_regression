@@ -73,7 +73,7 @@ def load_data(filename):
     except (ValueError, IndexError) as e:
         print(f"Error: Invalid data format - {str(e)}")
         sys.exit(1)
-
+        
     return mileages, prices
 
 def denormalize(mileages, prices, theta0_n, theta1_n):
@@ -160,7 +160,7 @@ def main():
     args = parser.parse_args()
     
     if args.plot:
-        plt.ion()
+        plt.ion() # for real-time plot updates and showing plot without blocking programm execution
 
     mileages, prices = load_data("data.csv")
     mileages_n, prices_n = normalize(mileages, prices)
