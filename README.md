@@ -55,10 +55,20 @@ It's recommended to use a virtual environment to avoid conflicts with other Pyth
 
 The algorithm uses a simple linear hypothesis function to predict car prices:
 
+```
 estimatePrice(mileage) = θ0 + (θ1 * mileage)
+```
 
+Where:
+
+* θ0 is the y-intercept (base price)
+* θ1 is the slope (price change per mileage unit)
+Gradient Descent Algorithm
+The training process uses gradient descent to optimize the parameters:
+```
 tmpθ0 = learningRate * (1/m) * Σ(estimatePrice(mileage[i]) - price[i])
 tmpθ1 = learningRate * (1/m) * Σ(estimatePrice(mileage[i]) - price[i]) * mileage[i]
+```
 
 ## Usage
 
@@ -81,13 +91,13 @@ python main.py [options]
 Examples:
 ```bash
 # Basic training with default parameters
-python main.py
+python3 main.py
 
 # Train with visualization and save the plots
-python main.py --plot --save-pictures
+python3 main.py --plot --save-pictures
 
 # Train and display all available metrics
-python main.py --cost-history --coefficient-determination --mean_squared_error
+python3 main.py --cost-history --coefficient-determination --mean_squared_error
 ```
 
 The program expects a file named `data.csv` in the working directory with mileage and price columns.
@@ -95,7 +105,7 @@ The program expects a file named `data.csv` in the working directory with mileag
 ### Predicting Prices
 
 ```bash
-python predict.py [mileage]
+python3 predict.py [mileage]
 ```
 
 If no mileage is provided, the program will prompt for input.
