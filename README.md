@@ -34,7 +34,7 @@ It's recommended to use a virtual environment to avoid conflicts with other Pyth
    ```
 
 3. **Activate the virtual environment**:
-   - On macOS/Linux:
+   - On Linux:
      ```bash
      source venv/bin/activate
      ```
@@ -75,7 +75,7 @@ tmpθ1 = learningRate * (1/m) * Σ(estimatePrice(mileage[i]) - price[i]) * milea
 ### Training the Model (main.py)
 
 ```bash
-python main.py [options]
+python3 main.py [options]
 ```
 
 #### Command-Line Options:
